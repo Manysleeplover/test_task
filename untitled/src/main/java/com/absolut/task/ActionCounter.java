@@ -5,9 +5,6 @@ import java.util.List;
 
 public class ActionCounter {
 
-    /**
-     * Константа, при желании - можно вынести в проперти
-     */
     private final int TIME_BUFFER = 300;
 
     private final List<Action> list = new ArrayList<>();
@@ -20,7 +17,7 @@ public class ActionCounter {
             synchronized (this) {
                 lastAction = list.get(list.size() - 1);
             }
-            // если пришедший action в прошлое - бросаем исключение
+            // если пришедший action в прошлом - бросаем исключение
             if (timestamp < lastAction.getTimestamp()) {
                 throw new Exception();
             }
