@@ -1,6 +1,7 @@
 package com.absolut.task;
 
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ActionCounter {
 
@@ -9,28 +10,32 @@ public class ActionCounter {
      */
     private final int TIME_BUFFER = 300;
 
-    /**
-     * Данная коллекция выбрана для безопасного чтения списка сообщений
-     */
-    private final CopyOnWriteArrayList<Action> list = new CopyOnWriteArrayList<>();
+    private final List<Action> list = new ArrayList<>();
 
 
     public void call(int timestamp) throws Exception {
         if (!list.isEmpty()) {
             //Берём последний элемент списка
-            Action lastAction = list.get(list.size() - 1);
+            Action lastAction;
+            synchronized (this) {
+                lastAction = list.get(list.size() - 1);
+            }
             // если пришедший action в прошлое - бросаем исключение
             if (timestamp < lastAction.getTimestamp()) {
                 throw new Exception();
             }
-            // если последний и текущий timestamp один и тот же - инкрементируем
+            // если последний и текущий timestamp один и тот же - инкрементируем счётчик
             if (lastAction.getTimestamp() == timestamp) {
                 lastAction.inc();
             } else {
-                list.add(new Action(timestamp));
+                synchronized (this){
+                    list.add(new Action(timestamp));
+                }
             }
         } else {
-            list.add(new Action(timestamp));
+            synchronized (this){
+                list.add(new Action(timestamp));
+            }
         }
     }
 
